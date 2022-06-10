@@ -1,0 +1,57 @@
+version: 0.2
+# Define batch/build-list in order to specify build environment here
+batch:
+  fast-fail: true
+  build-list:
+    # Specify a build environment for arm64
+    - identifier: arm64_builder
+      env:
+        image: aws/codebuild/amazonlinux2-aarch64-standard:2.0
+        compute-type: BUILD_GENERAL1_LARGE 
+        type: ARM_CONTAINER
+        privileged-mode: true
+# Instructions to build a container image out of this repo
+# Besides the pre-defined CodeBuild environment variables,
+#   See here: https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-env-vars.html
+# the following environment variables are also defined by the HDK Workbench:
+#   - ECR_REPOSITORY: the name of the AWS ECR repo to push the built container image to
+#   - BRANCH: the name of the current git branch of development
+phases:
+  pre_build:
+    on-failure: ABORT
+    # Define further environment variables to be used in all phases,
+    # then login to AWS ECR
+    commands:
+      - ARCH=$(uname -m)
+      - REPO=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}
+      - SHORT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION| cut -c1-10)
+      - echo Get ECR login ...
+      - $(aws ecr get-login --no-include-email --region ${AWS_REGION})
+      
+  build:
+    on-failure: ABORT
+    # Build the container image
+    commands:
+      - echo Building container image for $ARCH 
+      - >-
+          docker build
+          --build-arg BASE_BUILDER_IMAGE=conanio/gcc9-armv8:1.45.0
+          --build-arg BASE_RUNTIME_IMAGE=gcr.io/distroless/cc-debian11:nonroot-arm64
+          --tag ${REPO}:${BRANCH}-${SHORT_HASH}-${ARCH}
+          .
+      - docker push ${REPO}:${BRANCH}-${SHORT_HASH}-${ARCH}
+      
+  post_build:
+    # Tag the built container image with more convenient tags and push them as well
+    commands:
+      - docker tag ${REPO}:${BRANCH}-${SHORT_HASH}-${ARCH} ${REPO}:${BRANCH}-${SHORT_HASH}
+      - docker push ${REPO}:${BRANCH}-${SHORT_HASH}
+      - docker tag ${REPO}:${BRANCH}-${SHORT_HASH} ${REPO}:${BRANCH}
+      - docker push ${REPO}:${BRANCH}
+      - echo Build completed on `date` for arch \[$ARCH\]
+      - printf "${REPO}:${BRANCH}-${SHORT_HASH}-${ARCH}" > image_name.txt
+# Note: cannot be removed since the CodePipeline expects an artifact as an output
+# TODO: Once the CodeDeloy stage in the CodePipeline no longer requires artifacts, then this can be removed
+artifacts:
+  files:
+    - image_name.txt
