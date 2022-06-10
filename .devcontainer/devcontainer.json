@@ -1,0 +1,44 @@
+// For format details, see https://aka.ms/devcontainer.json
+{
+	"name": "${localWorkspaceFolderBasename}",
+
+	"image": "conanio/gcc9:1.45.0",
+
+	// Arguments to use when running the container
+	"runArgs": [ "--network=host" ],
+
+	// Environment variables to set in the container
+	"containerEnv": {
+		"http_proxy": "${localEnv:http_proxy}",
+		"https_proxy": "${localEnv:https_proxy}",
+		"no_proxy": "${localEnv:no_proxy}"
+	},
+
+	// Volumes to mount when running the container
+	"mounts": [
+		"source=conan_data,target=/home/conan/.conan/data,type=volume",
+	],
+
+	// Commands to execute once the container is created
+	"postCreateCommand": "conan profile new default --detect && conan profile update settings.compiler.libcxx=libstdc++11 default && conan config install ${containerWorkspaceFolder}/remotes.txt",
+
+	// Set *default* container specific settings.json values on container create.
+	"settings": {
+		"terminal.integrated.profiles.linux": {
+			"bash": {
+				"path": "bash",
+				"icon": "terminal-bash"
+			},
+		},
+		"terminal.integrated.defaultProfile.linux": "bash",
+		"cmake.buildDirectory": "${workspaceFolder}/build/${buildKit}",
+	},
+
+	// Add the IDs of extensions you want installed when the container is created.
+	"extensions": [
+		"ms-vscode.cpptools",
+		"ms-vscode.cmake-tools",
+		"disroop.conan",
+		"mhutchie.git-graph",
+	],
+}

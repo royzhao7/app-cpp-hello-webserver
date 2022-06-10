@@ -1,0 +1,8 @@
+# Ignore everything under .vscode
+/.vscode/*
+# except the following files
+!/.vscode/conan-settings.json
+!/.vscode/cmake-variants.yaml
+!/.vscode/cmake-kits.json
+# Ignore the build directory
+/build/

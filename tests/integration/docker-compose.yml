@@ -1,0 +1,31 @@
+version: "3.7"
+services:
+    cpp-hello:
+        build: 
+            context: ../../
+            # network host is only required when on VPN due to cisco messing up the ip routes
+            #network: host
+            args: 
+                http_proxy:
+                https_proxy:
+                no_proxy:
+        init: true
+        environment: 
+            PORT: 8080
+            LOG_LEVEL: "debug"
+    curl-root:
+        image: curlimages/curl:7.72.0
+        init: true
+        volumes:
+            - ./curl_test.sh:/tmp/curl_test.sh:ro
+        depends_on:
+            - cpp-hello
+        command: /tmp/curl_test.sh cpp-hello 8080 '' 'C++ Hello Web Server'
+    curl-text:
+        image: curlimages/curl:7.72.0
+        init: true
+        volumes:
+            - ./curl_test.sh:/tmp/curl_test.sh:ro
+        depends_on:
+            - cpp-hello
+        command: /tmp/curl_test.sh cpp-hello 8080 'text' 'Hello C++!'

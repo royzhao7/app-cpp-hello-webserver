@@ -1,0 +1,16 @@
+{
+    "profiles": [
+        {
+            "name": "gcc",
+            "conanFile": "${workspaceFolder}/conanfile.py",
+            "profile": "default",
+            "installArg": "--build missing --options build_unittest=False"
+        },
+        {
+            "name": "gcc-test",
+            "conanFile": "${workspaceFolder}/conanfile.py",
+            "profile": "default",
+            "installArg": "--build missing --options build_unittest=True --install-folder build/gcc"
+        }
+    ]
+}

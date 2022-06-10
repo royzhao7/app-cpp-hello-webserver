@@ -1,0 +1,9 @@
+# Ignore everything
+**
+# Except the following
+!inc/
+!src/
+!www/
+!CMakeLists.txt
+!remotes.txt
+!conanfile.py
