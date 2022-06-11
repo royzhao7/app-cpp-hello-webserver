@@ -37,9 +37,7 @@ phases:
       - >-
           docker build
           --build-arg BASE_BUILDER_IMAGE=public.ecr.aws/debian/debian:11
-          --build-arg BASE_RUNTIME_IMAGE=gcr.io/distroless/cc-debian11:nonroot-arm64
-          --build-arg GNU_ARCH=aarch64
-          --build-arg CONAN_ARCH=armv8
+          --build-arg BASE_RUNTIME_IMAGE=gcr.io/distroless/cc-debian11:nonroot
           --tag ${REPO}:${BRANCH}-${SHORT_HASH}-${ARCH}
           .
       - docker push ${REPO}:${BRANCH}-${SHORT_HASH}-${ARCH}

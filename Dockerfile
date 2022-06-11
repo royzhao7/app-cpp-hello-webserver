@@ -4,45 +4,25 @@ ARG     BASE_RUNTIME_IMAGE=gcr.io/distroless/cc-debian11:nonroot
 FROM    ${BASE_BUILDER_IMAGE} as build
 
 # Install the required development tools
-# Use a build arg for the build-essential to allow overriding for crossbuild
-ARG     BUILD_ESSENTIAL_PKG=build-essential
 RUN     set -x && \
         apt update && \
         apt install --assume-yes \
-            autoconf \
-            ${BUILD_ESSENTIAL_PKG} \
+            automake \
             cmake \
             curl \
             git \
             pkg-config \
+            # will bring in build-essential via recommends
             python3-pip \
             unzip \
             wget \
-            xz-utils \
             zip \
         && \
         apt clean && \
         rm -rf /var/lib/apt/lists/* && \
         :
-# Configure gcc environment variables based on selected architecture
-ARG     GNU_ARCH=x86_64
-ENV     AR=${GNU_ARCH}-linux-gnu-ar
-ENV     AS=${GNU_ARCH}-linux-gnu-as
-ENV     CC=${GNU_ARCH}-linux-gnu-gcc
-ENV     CMAKE_C_COMPILER=${GNU_ARCH}-linux-gnu-gcc
-ENV     CMAKE_CXX_COMPILER=${GNU_ARCH}-linux-gnu-g++
-ENV     CPP=${GNU_ARCH}-linux-gnu-cpp
-ENV     CXX=${GNU_ARCH}-linux-gnu-g++
-ENV     LD=${GNU_ARCH}-linux-gnu-ld
-ENV     NM=${GNU_ARCH}-linux-gnu-nm
-ENV     OBJCOPY=${GNU_ARCH}-linux-gnu-objcopy
-ENV     OBJDUMP=${GNU_ARCH}-linux-gnu-objdump
-ENV     RANLIB=${GNU_ARCH}-linux-gnu-ranlib
-ENV     READELF=${GNU_ARCH}-linux-gnu-readelf
-ENV     STRIP=${GNU_ARCH}-linux-gnu-strip
 # Install conan and configure the default profile
 ARG     CONAN_VERSION=1.49.0
-ARG     CONAN_ARCH=${GNU_ARCH}
 RUN     set -x && \
         pip install conan==${CONAN_VERSION} && \
         conan profile new \
@@ -51,10 +31,6 @@ RUN     set -x && \
             && \
         conan profile update \
             settings.compiler.libcxx=libstdc++11 \
-            default \
-            && \
-        conan profile update \
-            settings.arch=${CONAN_ARCH} \
             default \
             && \
         :
