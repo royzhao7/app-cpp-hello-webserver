@@ -2,7 +2,7 @@
 {
 	"name": "${localWorkspaceFolderBasename}",
 
-	"image": "conanio/gcc9:1.45.0",
+	"image": "conanio/gcc10:1.49.0",
 
 	// Arguments to use when running the container
 	"runArgs": [ "--network=host" ],
