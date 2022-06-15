@@ -56,14 +56,9 @@ RUN     set -x && \
 COPY    . \
         app/
 RUN     set -x && \
-        cmake \
-            -S app/ \
-            -B app/build/ \
-            -DCMAKE_BUILD_TYPE=Release \
-            && \
-        cmake \
-            --build app/build/ \
-            -j$(($(nproc) + 1)) \
+        conan build \
+            app/ \
+            --build-folder app/build/ \
             && \
         :
 

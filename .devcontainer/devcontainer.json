@@ -20,7 +20,7 @@
 	],
 
 	// Commands to execute once the container is created
-	"postCreateCommand": "conan profile new default --detect && conan profile update settings.compiler.libcxx=libstdc++11 default && conan config install ${containerWorkspaceFolder}/remotes.txt",
+	"postCreateCommand": ".devcontainer/post_create_script.sh",
 
 	// Set *default* container specific settings.json values on container create.
 	"settings": {
@@ -31,14 +31,13 @@
 			},
 		},
 		"terminal.integrated.defaultProfile.linux": "bash",
-		"cmake.buildDirectory": "${workspaceFolder}/build/${buildKit}",
 	},
 
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
 		"ms-vscode.cpptools",
-		"ms-vscode.cmake-tools",
 		"disroop.conan",
 		"mhutchie.git-graph",
+		"twxs.cmake",
 	],
 }

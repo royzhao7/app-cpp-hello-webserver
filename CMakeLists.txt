@@ -1,24 +1,30 @@
-cmake_minimum_required(VERSION 3.5)
-project(cpp_hello_app)
+cmake_minimum_required(VERSION 3.15)
+project(hello_webserver_app)
 
-option(BUILD_UNITTEST "Built unit tests only" OFF)
+# Global settings for ease of collecting output binaries and dynamic libraries
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
-# Import dependencies via conan
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup()
+# Find dependencies
+find_package(cpp-httplib)
+find_package(spdlog)
+find_package(tclap)
 
+# Collect application sources
 file(GLOB APP_SOURCES src/*.cpp)
 set(APP_INCLUDES ${CMAKE_CURRENT_SOURCE_DIR}/inc/)
 
-if(BUILD_UNITTEST)
-    # Exclude main.cpp from app sources for unit testing
-    list(FILTER APP_SOURCES EXCLUDE REGEX ".*/src/main.cpp$")
+add_executable(app ${APP_SOURCES})
+target_include_directories(app PRIVATE ${APP_INCLUDES})
+target_link_libraries(app
+    cpp-httplib::cpp-httplib
+    spdlog::spdlog
+    tclap::tclap
+)
+add_custom_target(www ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/www ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/www
+)
+
+if (BUILD_TESTING)
     add_subdirectory(tests/unit)
-else()
-    add_executable(app ${APP_SOURCES})
-    target_include_directories(app PRIVATE ${APP_INCLUDES})
-    target_link_libraries(app ${CONAN_LIBS})
-    add_custom_target(www ALL
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/www ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/www
-    )
 endif()

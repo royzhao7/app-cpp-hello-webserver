@@ -14,12 +14,10 @@ Once the development environment is loaded in VS Code, building and testing the 
 
 ### Using the GUI
 The status bar will contain all actions of the used/loaded extensions, e.g.,
-- Selecting a Conan profile, e.g., for the application or the unit test
+- Selecting a Conan profile, e.g., for the application or the unit test or both
 - Installing dependencies based on the chosen Conan profile
-- Selecting a CMake build kit
-- Selecting a CMake build target, e.g., the application or the unit test along with the build type
-- Running the build
-- Running the application or the unit test
+- Building the application/unit-test or both using Conan (which uses CMake in the background)  
+Note: for running the built application/unit-test, the terminal has to be used  
 
 Please check the documentation of the VS Code extensions used for details.  
 
@@ -29,17 +27,10 @@ The sequence to build the application from scratch is as follows:
     ````bash
     conan install . --install-folder build/gcc --build missing
     ````
-- Run CMake to configure the project
+- Build the application using Conan
     ````bash
-    cmake -S . -B build/gcc
+    conan build . --build-folder build/gcc
     ````
-    Note: optionally a build type can be provided by adding the argument `-DCMAKE_BUILD_TYPE=Debug` where
-          the build type can be one of `Debug`, `Release`, `RelWithDebInfo` and `MinSizeRel`
-- Run CMake to build the application
-    ````bash
-    cmake --build build/gcc -j4
-    ````
-    Note: a typical high value for the number of parallel jobs is `$(($(nproc)+1))`
 - Run the application
     ````bash
     ./build/gcc/bin/app
@@ -55,9 +46,8 @@ The sequence to build the application from scratch is as follows:
 The sequence to run the unit tests follow instructions similar to the above:
 ````bash
 conan install . --install-folder build/gcc --build missing --options build_unittest=True
-cmake -S . -B build/gcc -DBUILD_UNITTEST=ON
-cmake --build build/gcc -j4
-./build/gcc/tests/unit/bin/unittest
+conan build . --build-folder build/gcc
+./build/gcc/bin/test
 ````
 
 ## Running the Integration Test
