@@ -16,7 +16,7 @@
 
 	// Volumes to mount when running the container
 	"mounts": [
-		"source=conan_data,target=/home/conan/.conan/data,type=volume",
+		"source=conan_data,target=/home/conan/.conan/data,type=volume"
 	],
 
 	// Commands to execute once the container is created
@@ -28,9 +28,14 @@
 			"bash": {
 				"path": "bash",
 				"icon": "terminal-bash"
-			},
+			}
 		},
 		"terminal.integrated.defaultProfile.linux": "bash",
+		"C_Cpp.default.includePath": [
+			"${default}",
+			"${workspaceFolder}/**",
+			"/home/conan/.conan/data/**"
+		  ]
 	},
 
 	// Add the IDs of extensions you want installed when the container is created.
@@ -38,6 +43,6 @@
 		"ms-vscode.cpptools",
 		"disroop.conan",
 		"mhutchie.git-graph",
-		"twxs.cmake",
-	],
+		"twxs.cmake"
+	]
 }
