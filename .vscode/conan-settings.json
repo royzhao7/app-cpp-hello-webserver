@@ -11,6 +11,20 @@
             "conanFile": "${workspaceFolder}/conanfile.py",
             "profile": "default",
             "installArg": "--build missing --options build_unittest=True"
+        },
+        {
+            "name": "muslcc",
+            "conanFile": "${workspaceFolder}/conanfile.py",
+            "profileBuild": "default",
+            "profileHost": "muslcc",
+            "installArg": "--build missing --options build_unittest=False"
+        },
+        {
+            "name": "muslcc-test",
+            "conanFile": "${workspaceFolder}/conanfile.py",
+            "profileBuild": "default",
+            "profileHost": "muslcc",
+            "installArg": "--build missing --options build_unittest=True"
         }
     ]
 }
