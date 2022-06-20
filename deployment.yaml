@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: cpp-webserver-deployment
+  name: cpp-webserver-deployment-${BRANCH}
 spec:
   selector:
     matchLabels:
-      app: cpp-webserver
+      app: cpp-webserver-${BRANCH}
   replicas: 2 # tells deployment to run 2 pods matching the template
   template:
     metadata:
       labels:
-        app: cpp-webserver
+        app: cpp-webserver-${BRANCH}
     spec:
       containers:
-      - name: cpp-webserver
+      - name: cpp-webserver-${BRANCH}
         # Note: image name is defined by the end user. tag is the branch name
         image: ${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${BRANCH}
         imagePullPolicy: Always
