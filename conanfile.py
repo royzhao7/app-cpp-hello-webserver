@@ -1,7 +1,7 @@
 from conans import ConanFile
 from conan.tools.cmake import CMake
 
-class CppHelloConan(ConanFile):
+class HelloWebserverConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     requires = [
         "cpp-httplib/0.7.5",
