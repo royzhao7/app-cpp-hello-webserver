@@ -45,9 +45,9 @@ The sequence to build the application from scratch is as follows:
 
 The sequence to run the unit tests follow instructions similar to the above:
 ````bash
-conan install . --install-folder build/gcc --build missing --options build_unittest=True
-conan build . --build-folder build/gcc
-./build/gcc/bin/test
+conan install . --install-folder build/gcc-test --build missing --options build_unittest=True
+conan build . --build-folder build/gcc-test
+./build/gcc-test/bin/test
 ````
 
 ## Running the Integration Test
@@ -70,3 +70,43 @@ The sequence to run the integration test is as follows:
     ````
     Note: again, the above command assumes [Docker Compose V2](https://docs.docker.com/compose/#compose-v2-and-the-new-docker-compose-command). Alternatively for V1, the command would be `docker-compose up`
 - Stop the integration test run by pressing `Ctrl+C`
+
+## Using musl
+The default conan profiles build against [glibc](https://www.gnu.org/software/libc/), however an additional profile and toolchain is included to statically build against [musl](https://www.musl-libc.org/).  
+This enables the generation of a self-contained executable that can run on a [scratch](https://hub.docker.com/_/scratch) or [distroless/static](https://github.com/GoogleContainerTools/distroless/blob/main/base/README.md) base container image.  
+
+Similar to the instructions in the previous section, building and running using musl can be done via the GUI or the terminal window.  
+
+### Using the GUI
+Follow the same previous instructions but choose one of the muslcc conan profiles
+
+### Using the Terminal
+Follow the same previous instructions but specify the build and host profiles as follows:
+- For building and running the application
+    ````bash
+    conan install . \
+        --profile:build default \
+        --profile:host muslcc \
+        --install-folder build/muslcc \
+        --build missing
+    conan build . --build-folder build/muslcc
+    ./build/muslcc/bin/app
+    ````
+- For building and running the unit tests
+    ````bash
+    conan install . \
+        --profile:build default \
+        --profile:host muslcc \
+        --install-folder build/muslcc-test \
+        --build missing \
+        --options build_unittest=True
+    conan build . --build-folder build/muslcc-test
+    ./build/muslcc-test/bin/test
+    ````
+
+### Running the Integration Test
+Follow the same previous instructions but pass the necessary build arguments to build against musl and use a smaller runtime base image, i.e.,
+````bash
+docker compose build --build-arg CONAN_HOST_PROFILE=muslcc --build-arg BASE_RUNTIME_IMAGE=gcr.io/distroless/static-debian11:nonroot
+````
+Note: in case the above instruction is executed outside the Conti network, an additional build argument that skips the installation of the Conti CA cert can be provided, i.e., `--build-arg INSTALL_CONTI_CA_CERT=false`  
