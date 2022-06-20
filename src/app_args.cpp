@@ -136,17 +136,17 @@ app_args::app_args(int argc, const char* argv[])
     }
 }
 
-std::uint16_t app_args::get_port_number()
+std::uint16_t app_args::get_port_number() const
 {
     return m_port_number;
 }
 
-spdlog::level::level_enum app_args::get_spdlog_level()
+spdlog::level::level_enum app_args::get_spdlog_level() const
 {
     return m_spdlog_level;
 }
 
-std::uint32_t app_args::get_cycle_time()
+std::uint32_t app_args::get_cycle_time() const
 {
     return m_cycle_time;
 }

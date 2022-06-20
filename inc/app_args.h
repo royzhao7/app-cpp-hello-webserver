@@ -11,9 +11,9 @@ public:
     app_args(int argc, const char* argv[]);
     ~app_args() {}
     // Getters for application arguments
-    std::uint16_t get_port_number();
-    spdlog::level::level_enum get_spdlog_level();
-    std::uint32_t get_cycle_time();
+    std::uint16_t get_port_number() const;
+    spdlog::level::level_enum get_spdlog_level() const;
+    std::uint32_t get_cycle_time() const;
     const std::string& get_mount_dir() const;
 private:
     // Application arguments with default values
