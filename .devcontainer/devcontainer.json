@@ -1,27 +1,36 @@
 // For format details, see https://aka.ms/devcontainer.json
 {
 	"name": "${localWorkspaceFolderBasename}",
-
-	"image": "conanio/gcc10:1.49.0",
-
+	// Due to devcontainer not yet supporting the '--network host' argument when building from a Dockerfile
+	// See: https://github.com/microsoft/vscode-remote-release/issues/3545
+	// Workaround: build the image on the host before asking vscode to build it so that it is re-used
+	"initializeCommand": "docker build --network host --build-arg http_proxy --build-arg https_proxy --build-arg no_proxy --tag vsc-${localWorkspaceFolderBasename} .devcontainer/",
+	// Build using Dockerfile located in .devcontainer
+	"build": {
+		"dockerfile": "Dockerfile",
+		"context": ".",
+		"args": {
+			"http_proxy": "${localEnv:http_proxy}",
+			"https_proxy": "${localEnv:http_proxy}",
+			"no_proxy": "${localEnv:no_proxy}"
+		}
+	},
 	// Arguments to use when running the container
-	"runArgs": [ "--network=host" ],
-
+	"runArgs": [ 
+		"--network=host"
+	],
 	// Environment variables to set in the container
 	"containerEnv": {
 		"http_proxy": "${localEnv:http_proxy}",
 		"https_proxy": "${localEnv:https_proxy}",
 		"no_proxy": "${localEnv:no_proxy}"
 	},
-
 	// Volumes to mount when running the container
 	"mounts": [
 		"source=conan_data,target=/home/conan/.conan/data,type=volume"
 	],
-
 	// Commands to execute once the container is created
-	"postCreateCommand": ".devcontainer/post_create_script.sh",
-
+	"postCreateCommand": "conan config install remotes.txt",
 	// Set *default* container specific settings.json values on container create.
 	"settings": {
 		"terminal.integrated.profiles.linux": {
@@ -37,7 +46,6 @@
 			"/home/conan/.conan/data/**"
 		  ]
 	},
-
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
 		"ms-vscode.cpptools",
