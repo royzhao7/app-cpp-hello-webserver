@@ -3,7 +3,7 @@ version: 0.2
 batch:
   fast-fail: true
   build-list:
-    # Specify a build environment for arm64
+    # Specify a build environment for arm64 to perform native builds
     - identifier: arm64_builder
       env:
         image: aws/codebuild/amazonlinux2-aarch64-standard:2.0
@@ -39,6 +39,8 @@ phases:
           --build-arg BASE_BUILDER_IMAGE=public.ecr.aws/debian/debian:11
           --build-arg BASE_RUNTIME_IMAGE=gcr.io/distroless/static-debian11:nonroot
           --build-arg MUSL_CC_TOOLCHAIN=https://more.musl.cc/10/x86_64-linux-musl/aarch64-linux-musl-native.tgz
+          --build-arg GNU_HOST_ARCH=aarch64
+          --build-arg CONAN_HOST_ARCH=armv8
           --build-arg CONAN_HOST_PROFILE=muslcc
           --build-arg INSTALL_CONTI_CA_CERT=false
           --tag ${REPO}:${BRANCH}-${SHORT_HASH}-${ARCH}
