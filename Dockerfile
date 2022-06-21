@@ -1,14 +1,21 @@
+# This Dockerfile supports, via build arguments, the following build variants:
+# - native build using gcc and muslcc
+# - cross build using gcc and muslcc
+
 ARG     BASE_BUILDER_IMAGE=debian:11
 ARG     BASE_RUNTIME_IMAGE=gcr.io/distroless/cc-debian11:nonroot
 
-FROM    ${BASE_BUILDER_IMAGE} as build
+FROM    ${BASE_BUILDER_IMAGE} as builder
 
 # Install the required development tools
+# Use a build arg to allow specifying g++ for cross builds, e.g. setting to g++-aarch64-linux-gnu
+ARG     CROSS_COMPILER_PKG=""
 RUN     set -x && \
         apt update && \
         apt install --assume-yes \
             automake \
             cmake \
+            ${CROSS_COMPILER_PKG} \
             curl \
             git \
             # required by yq
@@ -73,106 +80,255 @@ RUN     set -x && \
         :
 # Update conan default profile's settings
 RUN     set -x && \
-        conan profile \
-            update \
+        conan profile update \
             settings.compiler.libcxx=libstdc++11 \
             default \
             && \
         :
+# Create a gcc conan profile and update its settings
+ARG     GNU_HOST_ARCH=x86_64
+ARG     CONAN_HOST_ARCH=x86_64
+RUN     set -x && \
+        conan profile new \
+            gcc \
+            --detect \
+            && \
+        conan profile update \
+            settings.arch=${CONAN_HOST_ARCH} \
+            gcc \
+            && \
+        conan profile update \
+            settings.compiler.libcxx=libstdc++11 \
+            gcc \
+            && \
+        conan profile update \
+            env.AR=/usr/bin/${GNU_HOST_ARCH}-linux-gnu-ar \
+            gcc \
+            && \
+        conan profile update \
+            env.AS=/usr/bin/${GNU_HOST_ARCH}-linux-gnu-as \
+            gcc \
+            && \
+        conan profile update \
+            env.CC=/usr/bin/${GNU_HOST_ARCH}-linux-gnu-gcc \
+            gcc \
+            && \
+        conan profile update \
+            env.CPP=/usr/bin/${GNU_HOST_ARCH}-linux-gnu-cpp \
+            gcc \
+            && \
+        conan profile update \
+            env.CXX=/usr/bin/${GNU_HOST_ARCH}-linux-gnu-g++ \
+            gcc \
+            && \
+        conan profile update \
+            env.LD=/usr/bin/${GNU_HOST_ARCH}-linux-gnu-ld \
+            gcc \
+            && \
+        conan profile update \
+            env.NM=/usr/bin/${GNU_HOST_ARCH}-linux-gnu-nm \
+            gcc \
+            && \
+        conan profile update \
+            env.OBJCOPY=/usr/bin/${GNU_HOST_ARCH}-linux-gnu-objcopy \
+            gcc \
+            && \
+        conan profile update \
+            env.OBJDUMP=/usr/bin/${GNU_HOST_ARCH}-linux-gnu-objdump \
+            gcc \
+            && \
+        conan profile update \
+            env.RANLIB=/usr/bin/${GNU_HOST_ARCH}-linux-gnu-ranlib \
+            gcc \
+            && \
+        conan profile update \
+            env.READELF=/usr/bin/${GNU_HOST_ARCH}-linux-gnu-readelf \
+            gcc \
+            && \
+        conan profile update \
+            env.STRIP=/usr/bin/${GNU_HOST_ARCH}-linux-gnu-strip \
+            gcc \
+            && \
+        :
 # Create a muslcc conan profile and update its settings
 RUN     set -x && \
-        conan profile \
-            new \
+        conan profile new \
             muslcc \
             --detect \
             && \
-        conan profile \
-            update \
+        conan profile update \
+            settings.arch=${CONAN_HOST_ARCH} \
+            muslcc \
+            && \
+        conan profile update \
             settings.compiler.libcxx=libstdc++11 \
             muslcc \
             && \
-        conan profile \
-            update \
+        conan profile update \
             settings.compiler.libc=musl \
             muslcc \
             && \
-        conan profile \
-            update \
+        if [ ! -f /usr/local/muslcc/bin/ar ]; then \
+            ln \
+                --symbolic \
+                --relative \
+                /usr/local/muslcc/bin/${GNU_HOST_ARCH}-linux-musl-ar \
+                /usr/local/muslcc/bin/ar \
+            ; \
+        fi && \
+        conan profile update \
             env.AR=/usr/local/muslcc/bin/ar \
             muslcc \
             && \
-        conan profile \
-            update \
+        if [ ! -f /usr/local/muslcc/bin/as ]; then \
+            ln \
+                --symbolic \
+                --relative \
+                /usr/local/muslcc/bin/${GNU_HOST_ARCH}-linux-musl-as \
+                /usr/local/muslcc/bin/as \
+            ; \
+        fi && \
+        conan profile update \
             env.AS=/usr/local/muslcc/bin/as \
             muslcc \
             && \
-        conan profile \
-            update \
+        if [ ! -f /usr/local/muslcc/bin/gcc ]; then \
+            ln \
+                --symbolic \
+                --relative \
+                /usr/local/muslcc/bin/${GNU_HOST_ARCH}-linux-musl-gcc \
+                /usr/local/muslcc/bin/gcc \
+            ; \
+        fi && \
+        conan profile update \
             env.CC=/usr/local/muslcc/bin/gcc \
             muslcc \
             && \
-        conan profile \
-            update \
+        if [ ! -f /usr/local/muslcc/bin/cpp ]; then \
+            ln \
+                --symbolic \
+                --relative \
+                /usr/local/muslcc/bin/${GNU_HOST_ARCH}-linux-musl-cpp \
+                /usr/local/muslcc/bin/cpp \
+            ; \
+        fi && \
+        conan profile update \
             env.CPP=/usr/local/muslcc/bin/cpp \
             muslcc \
             && \
-        conan profile \
-            update \
+        if [ ! -f /usr/local/muslcc/bin/g++ ]; then \
+            ln \
+                --symbolic \
+                --relative \
+                /usr/local/muslcc/bin/${GNU_HOST_ARCH}-linux-musl-g++ \
+                /usr/local/muslcc/bin/g++ \
+            ; \
+        fi && \
+        conan profile update \
             env.CXX=/usr/local/muslcc/bin/g++ \
             muslcc \
             && \
-        conan profile \
-            update \
+        if [ ! -f /usr/local/muslcc/bin/ld ]; then \
+            ln \
+                --symbolic \
+                --relative \
+                /usr/local/muslcc/bin/${GNU_HOST_ARCH}-linux-musl-ld \
+                /usr/local/muslcc/bin/ld \
+            ; \
+        fi && \
+        conan profile update \
             env.LD=/usr/local/muslcc/bin/ld \
             muslcc \
             && \
-        conan profile \
-            update \
+        if [ ! -f /usr/local/muslcc/bin/nm ]; then \
+            ln \
+                --symbolic \
+                --relative \
+                /usr/local/muslcc/bin/${GNU_HOST_ARCH}-linux-musl-nm \
+                /usr/local/muslcc/bin/nm \
+            ; \
+        fi && \
+        conan profile update \
             env.NM=/usr/local/muslcc/bin/nm \
             muslcc \
             && \
-        conan profile \
-            update \
+        if [ ! -f /usr/local/muslcc/bin/objcopy ]; then \
+            ln \
+                --symbolic \
+                --relative \
+                /usr/local/muslcc/bin/${GNU_HOST_ARCH}-linux-musl-objcopy \
+                /usr/local/muslcc/bin/objcopy \
+            ; \
+        fi && \
+        conan profile update \
             env.OBJCOPY=/usr/local/muslcc/bin/objcopy \
             muslcc \
             && \
-        conan profile \
-            update \
+        if [ ! -f /usr/local/muslcc/bin/objdump ]; then \
+            ln \
+                --symbolic \
+                --relative \
+                /usr/local/muslcc/bin/${GNU_HOST_ARCH}-linux-musl-objdump \
+                /usr/local/muslcc/bin/objdump \
+            ; \
+        fi && \
+        conan profile update \
             env.OBJDUMP=/usr/local/muslcc/bin/objdump \
             muslcc \
             && \
-        conan profile \
-            update \
+        if [ ! -f /usr/local/muslcc/bin/ranlib ]; then \
+            ln \
+                --symbolic \
+                --relative \
+                /usr/local/muslcc/bin/${GNU_HOST_ARCH}-linux-musl-ranlib \
+                /usr/local/muslcc/bin/ranlib \
+            ; \
+        fi && \
+        conan profile update \
             env.RANLIB=/usr/local/muslcc/bin/ranlib \
             muslcc \
             && \
-        conan profile \
-            update \
+        if [ ! -f /usr/local/muslcc/bin/readelf ]; then \
+            ln \
+                --symbolic \
+                --relative \
+                /usr/local/muslcc/bin/${GNU_HOST_ARCH}-linux-musl-readelf \
+                /usr/local/muslcc/bin/readelf \
+            ; \
+        fi && \
+        conan profile update \
             env.READELF=/usr/local/muslcc/bin/readelf \
             muslcc \
             && \
-        conan profile \
-            update \
+        if [ ! -f /usr/local/muslcc/bin/strip ]; then \
+            ln \
+                --symbolic \
+                --relative \
+                /usr/local/muslcc/bin/${GNU_HOST_ARCH}-linux-musl-strip \
+                /usr/local/muslcc/bin/strip \
+            ; \
+        fi && \
+        conan profile update \
             env.STRIP=/usr/local/muslcc/bin/strip \
             muslcc \
             && \
         # In order to take advantage of musl's ability to produce pure static executables
         # Note: will allow using scratch and distroless/static as base runtime images
-        conan profile \
-            update \
+        conan profile update \
             conf.tools.build:exelinkflags='[ "-static-libgcc", "-static-libstdc++", "-static" ]' \
             muslcc \
             && \
-        conan profile \
-            update \
+        conan profile update \
             conf.tools.build:sysroot=/usr/local/muslcc/ \
             muslcc \
             && \
         :
 
+FROM    builder AS build
+
 # Define the build and host conan profiles to use
 ARG     CONAN_BUILD_PROFILE=default
-ARG     CONAN_HOST_PROFILE=default
+ARG     CONAN_HOST_PROFILE=gcc
 # Install the application dependencies
 COPY    remotes.txt \
         /tmp/remotes.txt
