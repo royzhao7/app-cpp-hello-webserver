@@ -1,3 +1,5 @@
+# The development environment only supports native builds using gcc and muslcc
+
 ARG     BASE_DEV_IMAGE=conanio/gcc10:1.49.0
 
 FROM    ${BASE_DEV_IMAGE} AS dev
@@ -64,97 +66,91 @@ RUN     set -x && \
 
 # Update conan default profile's settings
 RUN     set -x && \
-        conan profile \
-            update \
+        conan profile update \
             settings.compiler.libcxx=libstdc++11 \
             default \
             && \
         :
 
+# Create a gcc conan profile and update its settings
+RUN     set -x && \
+        conan profile new \
+            gcc \
+            --detect \
+            && \
+        conan profile update \
+            settings.compiler.libcxx=libstdc++11 \
+            gcc \
+            && \
+        :
+
 # Create a muslcc conan profile and update its settings
 RUN     set -x && \
-        conan profile \
-            new \
+        conan profile new \
             muslcc \
             --detect \
             && \
-        conan profile \
-            update \
+        conan profile update \
             settings.compiler.libcxx=libstdc++11 \
             muslcc \
             && \
-        conan profile \
-            update \
+        conan profile update \
             settings.compiler.libc=musl \
             muslcc \
             && \
-        conan profile \
-            update \
+        conan profile update \
             env.AR=/usr/local/muslcc/bin/ar \
             muslcc \
             && \
-        conan profile \
-            update \
+        conan profile update \
             env.AS=/usr/local/muslcc/bin/as \
             muslcc \
             && \
-        conan profile \
-            update \
+        conan profile update \
             env.CC=/usr/local/muslcc/bin/gcc \
             muslcc \
             && \
-        conan profile \
-            update \
+        conan profile update \
             env.CPP=/usr/local/muslcc/bin/cpp \
             muslcc \
             && \
-        conan profile \
-            update \
+        conan profile update \
             env.CXX=/usr/local/muslcc/bin/g++ \
             muslcc \
             && \
-        conan profile \
-            update \
+        conan profile update \
             env.LD=/usr/local/muslcc/bin/ld \
             muslcc \
             && \
-        conan profile \
-            update \
+        conan profile update \
             env.NM=/usr/local/muslcc/bin/nm \
             muslcc \
             && \
-        conan profile \
-            update \
+        conan profile update \
             env.OBJCOPY=/usr/local/muslcc/bin/objcopy \
             muslcc \
             && \
-        conan profile \
-            update \
+        conan profile update \
             env.OBJDUMP=/usr/local/muslcc/bin/objdump \
             muslcc \
             && \
-        conan profile \
-            update \
+        conan profile update \
             env.RANLIB=/usr/local/muslcc/bin/ranlib \
             muslcc \
             && \
-        conan profile \
-            update \
+        conan profile update \
             env.READELF=/usr/local/muslcc/bin/readelf \
             muslcc \
             && \
-        conan profile \
-            update \
+        conan profile update \
             env.STRIP=/usr/local/muslcc/bin/strip \
             muslcc \
             && \
-        conan profile \
-            update \
+        conan profile update \
             conf.tools.build:exelinkflags='[ "-static-libgcc", "-static-libstdc++", "-static" ]' \
             muslcc \
             && \
-        conan profile \
-            update \
+        conan profile update \
             conf.tools.build:sysroot=/usr/local/muslcc/ \
             muslcc \
             && \

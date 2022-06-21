@@ -3,13 +3,15 @@
         {
             "name": "gcc",
             "conanFile": "${workspaceFolder}/conanfile.py",
-            "profile": "default",
+            "profileBuild": "default",
+            "profileHost": "gcc",
             "installArg": "--build missing --options build_unittest=False"
         },
         {
             "name": "gcc-test",
             "conanFile": "${workspaceFolder}/conanfile.py",
-            "profile": "default",
+            "profileBuild": "default",
+            "profileHost": "gcc",
             "installArg": "--build missing --options build_unittest=True"
         },
         {
