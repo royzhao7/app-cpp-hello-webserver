@@ -1,6 +1,16 @@
 # C++ Hello Web Server
 A simple C++ Web Server using cpp-httplib  
 
+- [Overview](#overview)
+- [Building and Unit Testing the Application](#building-and-unit-testing-the-application)
+    * [Using the GUI](#using-the-gui)
+    * [Using the Terminal](#using-the-terminal)
+- [Running the Integration Test](#running-the-integration-test)
+- [Using musl](#using-musl)
+    * [Using the GUI](#using-the-gui-1)
+    * [Using the Terminal](#using-the-terminal-1)
+    * [Running the Integration Test](#running-the-integration-test-1)
+
 ## Overview
 The purpose of this repo is to demonstrate the usage of C++ in the development of containerized services in a manner similar to other programming languages.  
 This involves mainly:
@@ -25,8 +35,13 @@ Please check the documentation of the VS Code extensions used for details.
 The sequence to build the application from scratch is as follows:
 - Install the application dependencies using Conan
     ````bash
-    conan install . --install-folder build/gcc --build missing
-    ````
+    conan install . \
+        --profile:build default \
+        --profile:host gcc \
+        --install-folder build/gcc \
+        --build missing
+    ````  
+    Note: since the `default` and `gcc` profiles in the development environment are basically the same, the above instruction can be simplified to `conan install . --install-folder build/gcc --build missing`  
 - Build the application using Conan
     ````bash
     conan build . --build-folder build/gcc
@@ -45,10 +60,16 @@ The sequence to build the application from scratch is as follows:
 
 The sequence to run the unit tests follow instructions similar to the above:
 ````bash
-conan install . --install-folder build/gcc-test --build missing --options build_unittest=True
+conan install . \
+    --profile:build default \
+    --profile:host gcc \
+    --install-folder build/gcc-test \
+    --build missing \
+    --options build_unittest=True
 conan build . --build-folder build/gcc-test
 ./build/gcc-test/bin/test
-````
+````  
+Note: since the `default` and `gcc` profiles in the development environment are basically the same, the above first instruction can be simplified to `conan install . --install-folder build/gcc --build missing --options build_unittest=True`  
 
 ## Running the Integration Test
 __Important Note:__ since the integration test uses [Docker Compose](https://docs.docker.com/compose/), it has to be run __outside__ of the development container.  
@@ -64,6 +85,7 @@ The sequence to run the integration test is as follows:
     Notes:
     * The above command assumes [Docker Compose V2](https://docs.docker.com/compose/#compose-v2-and-the-new-docker-compose-command). Alternatively for V1, the command would be `docker-compose build`
     * Although it is possible to build and run the integration test in one go (via `docker compose up --build`), it is recommended to split these steps in order to check for build errors more easily
+    * In case the above instruction is executed outside the Conti network, an additional build argument that skips the installation of the Conti CA cert can be provided, i.e., `--build-arg INSTALL_CONTI_CA_CERT=false`
 - Run the integration test
     ````bash
     docker compose up
