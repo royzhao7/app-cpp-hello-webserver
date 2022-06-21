@@ -129,6 +129,8 @@ Follow the same previous instructions but specify the build and host profiles as
 ### Running the Integration Test
 Follow the same previous instructions but pass the necessary build arguments to build against musl and use a smaller runtime base image, i.e.,
 ````bash
-docker compose build --build-arg CONAN_HOST_PROFILE=muslcc --build-arg BASE_RUNTIME_IMAGE=gcr.io/distroless/static-debian11:nonroot
+docker compose build \
+    --build-arg CONAN_HOST_PROFILE=muslcc \
+    --build-arg BASE_RUNTIME_IMAGE=gcr.io/distroless/static-debian11:nonroot
 ````
 Note: in case the above instruction is executed outside the Conti network, an additional build argument that skips the installation of the Conti CA cert can be provided, i.e., `--build-arg INSTALL_CONTI_CA_CERT=false`  
