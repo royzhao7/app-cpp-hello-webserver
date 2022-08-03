@@ -22,10 +22,11 @@ phases:
     # then login to AWS ECR
     commands:
       - ARCH=aarch64
-      - REPO=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}
+      - ECR_REGISTRY=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+      - REPO=${ECR_REGISTRY}/${ECR_REPOSITORY}
       - SHORT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION| cut -c1-10)
-      - echo Get ECR login ...
-      - $(aws ecr get-login --no-include-email --region ${AWS_REGION})
+      - echo Login to ECR registry ...
+      - aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}
       
   build:
     on-failure: ABORT
