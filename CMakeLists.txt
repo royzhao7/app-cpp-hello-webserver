@@ -18,13 +18,15 @@ add_executable(app ${APP_SOURCES})
 target_include_directories(app PRIVATE ${APP_INCLUDES})
 target_link_libraries(app
     cpp-httplib::cpp-httplib
-    spdlog::spdlog
+    # Workaround due to updated fmt/spdlog recipe from conan failing gcc cross
+    # See: https://github.com/conan-io/conan-center-index/issues/11822
+    spdlog::spdlog_header_only
     tclap::tclap
-)
-add_custom_target(www ALL
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/www ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/www
 )
 
 if (BUILD_TESTING)
     add_subdirectory(tests/unit)
 endif()
+
+install(TARGETS app)
+install(DIRECTORY www DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)

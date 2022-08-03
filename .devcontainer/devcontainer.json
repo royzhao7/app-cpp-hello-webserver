@@ -27,7 +27,7 @@
 	},
 	// Volumes to mount when running the container
 	"mounts": [
-		"source=conan_data,target=/home/conan/.conan/data,type=volume"
+		"source=conan_data,target=/home/vscode/.conan/data,type=volume"
 	],
 	// Commands to execute once the container is created
 	"postCreateCommand": "conan config install remotes.txt",
@@ -43,7 +43,7 @@
 		"C_Cpp.default.includePath": [
 			"${default}",
 			"${workspaceFolder}/**",
-			"/home/conan/.conan/data/**"
+			"/home/vscode/.conan/data/**"
 		  ]
 	},
 	// Add the IDs of extensions you want installed when the container is created.

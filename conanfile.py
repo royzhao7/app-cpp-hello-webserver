@@ -17,6 +17,9 @@ class HelloWebserverConan(ConanFile):
     }
     default_options = {
         "build_unittest": False,
+        # Workaround due to updated fmt/spdlog recipe from conan failing gcc cross
+        # See: https://github.com/conan-io/conan-center-index/issues/11822
+        "spdlog:header_only": True,
     }
 
     def requirements(self):

@@ -3,29 +3,27 @@
         {
             "name": "gcc",
             "conanFile": "${workspaceFolder}/conanfile.py",
-            "profileBuild": "default",
-            "profileHost": "gcc",
+            "profile": "default",
             "installArg": "--build missing --options build_unittest=False"
         },
         {
             "name": "gcc-test",
             "conanFile": "${workspaceFolder}/conanfile.py",
-            "profileBuild": "default",
-            "profileHost": "gcc",
+            "profile": "default",
             "installArg": "--build missing --options build_unittest=True"
         },
         {
-            "name": "muslcc",
+            "name": "gcc-cross",
             "conanFile": "${workspaceFolder}/conanfile.py",
             "profileBuild": "default",
-            "profileHost": "muslcc",
+            "profileHost": "gcc-cross",
             "installArg": "--build missing --options build_unittest=False"
         },
         {
-            "name": "muslcc-test",
+            "name": "gcc-cross-test",
             "conanFile": "${workspaceFolder}/conanfile.py",
             "profileBuild": "default",
-            "profileHost": "muslcc",
+            "profileHost": "gcc-cross",
             "installArg": "--build missing --options build_unittest=True"
         }
     ]

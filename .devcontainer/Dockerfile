@@ -1,157 +1,176 @@
-# The development environment only supports native builds using gcc and muslcc
-
-ARG     BASE_DEV_IMAGE=conanio/gcc10:1.49.0
+# This development environment supports native and cross builds using gcc
+ARG     BASE_DEV_IMAGE=debian:11
 
 FROM    ${BASE_DEV_IMAGE} AS dev
 
+# Install the required development tools
+RUN     set -x && \
+        apt update && \
+        apt install --assume-yes \
+            automake \
+            cmake \
+            curl \
+            # will bring in openssh-client via recommends
+            git \
+            pkg-config \
+            # will bring in build-essential via recommends
+            python3-pip \
+            unzip \
+            wget \
+            zip \
+        && \
+        apt clean && \
+        rm -rf /var/lib/apt/lists/* && \
+        :
+# Install toolchain for cross compling (if requested)
+ARG     INSTALL_CROSS_COMPILER=true
+ARG     CROSS_COMPILER_PKG=g++-aarch64-linux-gnu
+RUN     set -x && \
+        if [ "${INSTALL_CROSS_COMPILER}" = "true" ]; then \
+            apt update && \
+            apt install --assume-yes \
+                ${CROSS_COMPILER_PKG} \
+                && \
+            apt clean && \
+            rm -rf /var/lib/apt/lists/* && \
+            :; \
+        fi && \
+        :
+# Install conan
+ARG     CONAN_VERSION=1.49.0
+RUN     set -x && \
+        pip install conan==${CONAN_VERSION} && \
+        :
 # Add the Continental CA Certifcate to the list of trusted certificates (required for secure http when within VPN)
 ARG     INSTALL_CONTI_CA_CERT=true
 RUN     set -x && \
         if [ "${INSTALL_CONTI_CA_CERT}" = "true" ]; then \
-            sudo wget \
+            wget \
                 -O /usr/local/share/ca-certificates/CorporateITSecurity.crt \
                 http://ca.conti.de/ccacert.crt \
                 && \
-            sudo update-ca-certificates && \
+            update-ca-certificates && \
             :; \
         fi && \
         :
-
-# Install openssh-client to enable pull/push from git urls
-# Install jq as it is a requirement for yq (to be installed later below)
+# Install additional tools used in the development container
+#   - sudo to allow non-root user privileged operations
 RUN     set -x && \
-        sudo apt update && \
-        sudo apt install --assume-yes \
-            openssh-client \
-            jq \
+        apt update && \
+        apt install --assume-yes \
+            sudo \
             && \
-        sudo apt clean && \
-        sudo rm -rf /var/lib/apt/lists/* && \
+        apt clean && \
+        rm -rf /var/lib/apt/lists/* && \
         :
-
-# Install yq (required to update the conan settings.yml later)
-ARG     YQ_VERSION=2.14.0
+# Create a non-root user for this development container, and give sudo rights
+ARG     USERNAME=vscode
+ARG     GROUPNAME=${USERNAME}
+ARG     USER_UID=1000
+ARG     USER_GID=1000
 RUN     set -x && \
-        pip install yq==${YQ_VERSION} && \
+        groupadd \
+            --gid ${USER_GID} \
+            ${GROUPNAME} \
+            && \
+        useradd \
+            --uid ${USER_UID} \
+            --gid ${USER_GID} \
+            --create-home \
+            ${USERNAME} \
+            && \
+        echo ${USERNAME} ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/${USERNAME} && \
+        chmod 0440 /etc/sudoers.d/${USERNAME} && \
         :
-
-# Install the musl.cc toolchain
-# Note: using gcc 10 similar to the current base builder image
-ARG     MUSL_CC_TOOLCHAIN=https://more.musl.cc/10/x86_64-linux-musl/x86_64-linux-musl-native.tgz
+# Switch to the non-root user
+USER    ${USERNAME}
+# Enable all aliases already defined in .bashrc
 RUN     set -x && \
-        curl \
-            --output /tmp/musl-cc-toolchain.tgz \
-            ${MUSL_CC_TOOLCHAIN} \
+        sed --in-place \
+            's/#alias/alias/g' \
+            $HOME/.bashrc \
             && \
-        sudo mkdir /usr/local/muslcc && \
-        sudo tar \
-            --extract \
-            --file /tmp/musl-cc-toolchain.tgz \
-            --directory /usr/local/muslcc \
-            --strip-components 1 \
-            && \
-        rm /tmp/musl-cc-toolchain.tgz && \
         :
-
-# Initialize and update conan settings to differentiate between glibc and musl
+# Create conan default config, update settings and profile
 RUN     set -x && \
         conan config init && \
-        yq \
-            --in-place \
-            --yml-roundtrip \
-            '.compiler.gcc += { "libc": [ "None", "glibc", "musl" ] }' \
-            $HOME/.conan/settings.yml \
-            && \
-        :
-
-# Update conan default profile's settings
-RUN     set -x && \
-        conan profile update \
+        if [ "${INSTALL_CONTI_CA_CERT}" = "true" ]; then \
+            cat \
+                /usr/local/share/ca-certificates/CorporateITSecurity.crt \
+                >> $HOME/.conan/cacert.pem \
+            ; \
+        fi && \
+        conan profile \
+            update \
             settings.compiler.libcxx=libstdc++11 \
             default \
             && \
         :
-
-# Create a gcc conan profile and update its settings
+# Create a gcc-cross conan profile and update its settings (if cross compiler is installed)
+ARG     GNU_HOST_ARCH=aarch64
+ARG     CONAN_HOST_ARCH=armv8
 RUN     set -x && \
-        conan profile new \
-            gcc \
-            --detect \
-            && \
-        conan profile update \
-            settings.compiler.libcxx=libstdc++11 \
-            gcc \
-            && \
-        :
-
-# Create a muslcc conan profile and update its settings
-RUN     set -x && \
-        conan profile new \
-            muslcc \
-            --detect \
-            && \
-        conan profile update \
-            settings.compiler.libcxx=libstdc++11 \
-            muslcc \
-            && \
-        conan profile update \
-            settings.compiler.libc=musl \
-            muslcc \
-            && \
-        conan profile update \
-            env.AR=/usr/local/muslcc/bin/ar \
-            muslcc \
-            && \
-        conan profile update \
-            env.AS=/usr/local/muslcc/bin/as \
-            muslcc \
-            && \
-        conan profile update \
-            env.CC=/usr/local/muslcc/bin/gcc \
-            muslcc \
-            && \
-        conan profile update \
-            env.CPP=/usr/local/muslcc/bin/cpp \
-            muslcc \
-            && \
-        conan profile update \
-            env.CXX=/usr/local/muslcc/bin/g++ \
-            muslcc \
-            && \
-        conan profile update \
-            env.LD=/usr/local/muslcc/bin/ld \
-            muslcc \
-            && \
-        conan profile update \
-            env.NM=/usr/local/muslcc/bin/nm \
-            muslcc \
-            && \
-        conan profile update \
-            env.OBJCOPY=/usr/local/muslcc/bin/objcopy \
-            muslcc \
-            && \
-        conan profile update \
-            env.OBJDUMP=/usr/local/muslcc/bin/objdump \
-            muslcc \
-            && \
-        conan profile update \
-            env.RANLIB=/usr/local/muslcc/bin/ranlib \
-            muslcc \
-            && \
-        conan profile update \
-            env.READELF=/usr/local/muslcc/bin/readelf \
-            muslcc \
-            && \
-        conan profile update \
-            env.STRIP=/usr/local/muslcc/bin/strip \
-            muslcc \
-            && \
-        conan profile update \
-            conf.tools.build:exelinkflags='[ "-static-libgcc", "-static-libstdc++", "-static" ]' \
-            muslcc \
-            && \
-        conan profile update \
-            conf.tools.build:sysroot=/usr/local/muslcc/ \
-            muslcc \
-            && \
+        if [ "${INSTALL_CROSS_COMPILER}" = "true" ]; then \
+            conan profile new \
+                gcc-cross \
+                --detect \
+                && \
+            conan profile update \
+                settings.arch=${CONAN_HOST_ARCH} \
+                gcc-cross \
+                && \
+            conan profile update \
+                settings.compiler.libcxx=libstdc++11 \
+                gcc-cross \
+                && \
+            conan profile update \
+                env.AR=/usr/bin/${GNU_HOST_ARCH}-linux-gnu-ar \
+                gcc-cross \
+                && \
+            conan profile update \
+                env.AS=/usr/bin/${GNU_HOST_ARCH}-linux-gnu-as \
+                gcc-cross \
+                && \
+            conan profile update \
+                env.CC=/usr/bin/${GNU_HOST_ARCH}-linux-gnu-gcc \
+                gcc-cross \
+                && \
+            conan profile update \
+                env.CPP=/usr/bin/${GNU_HOST_ARCH}-linux-gnu-cpp \
+                gcc-cross \
+                && \
+            conan profile update \
+                env.CXX=/usr/bin/${GNU_HOST_ARCH}-linux-gnu-g++ \
+                gcc-cross \
+                && \
+            conan profile update \
+                env.LD=/usr/bin/${GNU_HOST_ARCH}-linux-gnu-ld \
+                gcc-cross \
+                && \
+            conan profile update \
+                env.NM=/usr/bin/${GNU_HOST_ARCH}-linux-gnu-nm \
+                gcc-cross \
+                && \
+            conan profile update \
+                env.OBJCOPY=/usr/bin/${GNU_HOST_ARCH}-linux-gnu-objcopy \
+                gcc-cross \
+                && \
+            conan profile update \
+                env.OBJDUMP=/usr/bin/${GNU_HOST_ARCH}-linux-gnu-objdump \
+                gcc-cross \
+                && \
+            conan profile update \
+                env.RANLIB=/usr/bin/${GNU_HOST_ARCH}-linux-gnu-ranlib \
+                gcc-cross \
+                && \
+            conan profile update \
+                env.READELF=/usr/bin/${GNU_HOST_ARCH}-linux-gnu-readelf \
+                gcc-cross \
+                && \
+            conan profile update \
+                env.STRIP=/usr/bin/${GNU_HOST_ARCH}-linux-gnu-strip \
+                gcc-cross \
+                && \
+            :; \
+        fi && \
         :

@@ -6,10 +6,6 @@ A simple C++ Web Server using cpp-httplib
     * [Using the GUI](#using-the-gui)
     * [Using the Terminal](#using-the-terminal)
 - [Running the Integration Test](#running-the-integration-test)
-- [Using musl](#using-musl)
-    * [Using the GUI](#using-the-gui-1)
-    * [Using the Terminal](#using-the-terminal-1)
-    * [Running the Integration Test](#running-the-integration-test-1)
 
 ## Overview
 The purpose of this repo is to demonstrate the usage of C++ in the development of containerized services in a manner similar to other programming languages.  
@@ -35,13 +31,8 @@ Please check the documentation of the VS Code extensions used for details.
 The sequence to build the application from scratch is as follows:
 - Install the application dependencies using Conan
     ````bash
-    conan install . \
-        --profile:build default \
-        --profile:host gcc \
-        --install-folder build/gcc \
-        --build missing
-    ````  
-    Note: since the `default` and `gcc` profiles in the development environment are basically the same, the above instruction can be simplified to `conan install . --install-folder build/gcc --build missing`  
+    conan install . --install-folder build/gcc --build missing
+    ````
 - Build the application using Conan
     ````bash
     conan build . --build-folder build/gcc
@@ -60,16 +51,10 @@ The sequence to build the application from scratch is as follows:
 
 The sequence to run the unit tests follow instructions similar to the above:
 ````bash
-conan install . \
-    --profile:build default \
-    --profile:host gcc \
-    --install-folder build/gcc-test \
-    --build missing \
-    --options build_unittest=True
-conan build . --build-folder build/gcc-test
-./build/gcc-test/bin/test
-````  
-Note: since the `default` and `gcc` profiles in the development environment are basically the same, the above first instruction can be simplified to `conan install . --install-folder build/gcc --build missing --options build_unittest=True`  
+conan install . --install-folder build/gcc --build missing --options build_unittest=True
+conan build . --build-folder build/gcc
+./build/gcc/bin/test
+````
 
 ## Running the Integration Test
 __Important Note:__ since the integration test uses [Docker Compose](https://docs.docker.com/compose/), it has to be run __outside__ of the development container.  
@@ -92,45 +77,3 @@ The sequence to run the integration test is as follows:
     ````
     Note: again, the above command assumes [Docker Compose V2](https://docs.docker.com/compose/#compose-v2-and-the-new-docker-compose-command). Alternatively for V1, the command would be `docker-compose up`
 - Stop the integration test run by pressing `Ctrl+C`
-
-## Using musl
-The default conan profiles build against [glibc](https://www.gnu.org/software/libc/), however an additional profile and toolchain is included to statically build against [musl](https://www.musl-libc.org/).  
-This enables the generation of a self-contained executable that can run on a [scratch](https://hub.docker.com/_/scratch) or [distroless/static](https://github.com/GoogleContainerTools/distroless/blob/main/base/README.md) base container image.  
-
-Similar to the instructions in the previous section, building and running using musl can be done via the GUI or the terminal window.  
-
-### Using the GUI
-Follow the same previous instructions but choose one of the muslcc conan profiles
-
-### Using the Terminal
-Follow the same previous instructions but specify the build and host profiles as follows:
-- For building and running the application
-    ````bash
-    conan install . \
-        --profile:build default \
-        --profile:host muslcc \
-        --install-folder build/muslcc \
-        --build missing
-    conan build . --build-folder build/muslcc
-    ./build/muslcc/bin/app
-    ````
-- For building and running the unit tests
-    ````bash
-    conan install . \
-        --profile:build default \
-        --profile:host muslcc \
-        --install-folder build/muslcc-test \
-        --build missing \
-        --options build_unittest=True
-    conan build . --build-folder build/muslcc-test
-    ./build/muslcc-test/bin/test
-    ````
-
-### Running the Integration Test
-Follow the same previous instructions but pass the necessary build arguments to build against musl and use a smaller runtime base image, i.e.,
-````bash
-docker compose build \
-    --build-arg CONAN_HOST_PROFILE=muslcc \
-    --build-arg BASE_RUNTIME_IMAGE=gcr.io/distroless/static-debian11:nonroot
-````
-Note: in case the above instruction is executed outside the Conti network, an additional build argument that skips the installation of the Conti CA cert can be provided, i.e., `--build-arg INSTALL_CONTI_CA_CERT=false`  
