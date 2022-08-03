@@ -3,12 +3,11 @@ version: 0.2
 batch:
   fast-fail: true
   build-list:
-    # Specify a build environment for arm64 to perform native builds
-    - identifier: arm64_builder
+    # Specify a build environment with latest standard and privileged mode
+    - identifier: app_builder
       env:
-        image: aws/codebuild/amazonlinux2-aarch64-standard:2.0
-        compute-type: BUILD_GENERAL1_LARGE 
-        type: ARM_CONTAINER
+        image: aws/codebuild/standard:5.0
+        compute-type: BUILD_GENERAL1_MEDIUM 
         privileged-mode: true
 # Instructions to build a container image out of this repo
 # Besides the pre-defined CodeBuild environment variables,
@@ -22,7 +21,7 @@ phases:
     # Define further environment variables to be used in all phases,
     # then login to AWS ECR
     commands:
-      - ARCH=$(uname -m)
+      - ARCH=aarch64
       - REPO=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}
       - SHORT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION| cut -c1-10)
       - echo Get ECR login ...
@@ -37,11 +36,8 @@ phases:
       - >-
           docker build
           --build-arg BASE_BUILDER_IMAGE=public.ecr.aws/debian/debian:11
-          --build-arg BASE_RUNTIME_IMAGE=gcr.io/distroless/cc-debian11:nonroot
-          --build-arg MUSL_CC_TOOLCHAIN=https://more.musl.cc/10/x86_64-linux-musl/aarch64-linux-musl-native.tgz
-          --build-arg GNU_HOST_ARCH=aarch64
-          --build-arg CONAN_HOST_ARCH=armv8
-          --build-arg CONAN_HOST_PROFILE=gcc
+          --build-arg BASE_RUNTIME_IMAGE=gcr.io/distroless/cc-debian11:nonroot-arm64
+          --build-arg CONAN_HOST_PROFILE=gcc-cross
           --build-arg INSTALL_CONTI_CA_CERT=false
           --tag ${REPO}:${BRANCH}-${SHORT_HASH}-${ARCH}
           .
