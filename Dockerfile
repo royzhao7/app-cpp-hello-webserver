@@ -190,4 +190,4 @@ COPY    --from=build \
 # Document the used application port
 EXPOSE  5000
 # Set the default command to run the application
-CMD     [ "app" ]
+CMD     [ "app", "--mount-dir", "/usr/bin/www/" ]
