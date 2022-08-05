@@ -18,6 +18,20 @@ spec:
         image: ${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${BRANCH}
         imagePullPolicy: Always
         ports:
-        - containerPort: 80
+        - containerPort: 5000
+          name: cpp-webserver-port
       imagePullSecrets:
       - name: aws-ecr-pass
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cpp-webserver-service-${BRANCH}
+spec:
+  selector:
+    matchLabels:
+      app: cpp-webserver-${BRANCH}
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: cpp-webserver-port
