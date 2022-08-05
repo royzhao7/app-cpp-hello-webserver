@@ -35,3 +35,5 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: cpp-webserver-port
+  # For simplicitly of opening an ssh tunnel to the service without having to check the chosen IP
+  clusterIP: 10.43.1.1
