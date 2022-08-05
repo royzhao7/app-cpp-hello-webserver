@@ -19,7 +19,7 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 5000
-          name: cpp-webserver-port
+          name: cpp-web-port
       imagePullSecrets:
       - name: aws-ecr-pass
 ---
@@ -34,6 +34,6 @@ spec:
   ports:
     - protocol: TCP
       port: 80
-      targetPort: cpp-webserver-port
+      targetPort: cpp-web-port
   # For simplicitly of opening an ssh tunnel to the service without having to check the chosen IP
   clusterIP: 10.43.1.1
