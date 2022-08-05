@@ -29,7 +29,6 @@ metadata:
   name: cpp-webserver-service-${BRANCH}
 spec:
   selector:
-    matchLabels:
       app: cpp-webserver-${BRANCH}
   ports:
     - protocol: TCP
