@@ -187,7 +187,9 @@ COPY    --from=build \
             --chown=${RUNTIME_USER}:${RUNTIME_GROUP} \
             app/build/package/ \
             /usr/
+# Set the working directory
+WORKDIR /usr/bin/
 # Document the used application port
 EXPOSE  5000
 # Set the default command to run the application
-CMD     [ "app", "--mount-dir", "/usr/bin/www/" ]
+CMD     [ "app" ]
