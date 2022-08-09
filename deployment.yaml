@@ -15,15 +15,13 @@ spec:
       containers:
       - name: cpp-webserver-${BRANCH}
         # Note: image name is defined by the end user. tag is the branch name
-        image: ${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${BRANCH}
+        image: ${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${BRANCH}-${SHORT_HASH}
         imagePullPolicy: Always
         ports:
         - containerPort: 5000
           name: cpp-web-port
       imagePullSecrets:
       - name: aws-ecr-pass
-      # Note: workaround for now to ensure re-deployment until git short hash is included in image tag
-      terminationGracePeriodSeconds: 30
 ---
 apiVersion: v1
 kind: Service
