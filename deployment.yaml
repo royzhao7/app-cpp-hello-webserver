@@ -14,8 +14,8 @@ spec:
     spec:
       containers:
       - name: cpp-webserver-${BRANCH}
-        # Note: image name is defined by the end user. tag is the branch name
-        image: ${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${BRANCH}-${SHORT_HASH}
+        # Note: image name is defined by the end user. tag is the branch name appended by the commit ID (to ensure re-creation of pods)
+        image: ${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${BRANCH}-${COMMIT_ID_SHORT}
         imagePullPolicy: Always
         ports:
         - containerPort: 5000
