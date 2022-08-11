@@ -18,9 +18,7 @@ add_executable(test ${TEST_SOURCES} ${TEST_APP_SOURCES})
 target_include_directories(test PRIVATE ${APP_INCLUDES})
 target_link_libraries(test
     cpp-httplib::cpp-httplib
-    # Workaround due to updated fmt/spdlog recipe from conan failing gcc cross
-    # See: https://github.com/conan-io/conan-center-index/issues/11822
-    spdlog::spdlog_header_only
+    spdlog::spdlog
     tclap::tclap
     gtest::gtest
 )

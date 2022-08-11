@@ -18,9 +18,7 @@ add_executable(app ${APP_SOURCES})
 target_include_directories(app PRIVATE ${APP_INCLUDES})
 target_link_libraries(app
     cpp-httplib::cpp-httplib
-    # Workaround due to updated fmt/spdlog recipe from conan failing gcc cross
-    # See: https://github.com/conan-io/conan-center-index/issues/11822
-    spdlog::spdlog_header_only
+    spdlog::spdlog
     tclap::tclap
 )
 
