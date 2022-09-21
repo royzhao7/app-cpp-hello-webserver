@@ -37,7 +37,7 @@ RUN     set -x && \
         fi && \
         :
 # Install conan
-ARG     CONAN_VERSION=1.51.1
+ARG     CONAN_VERSION=1.52.0
 RUN     set -x && \
         pip install conan==${CONAN_VERSION} && \
         :
