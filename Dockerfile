@@ -152,13 +152,13 @@ RUN     set -x && \
         conan config \
             install \
             /tmp/remotes.txt
-COPY    conanfile.py \
+COPY    conan_locks/ \
+        conanfile.py \
         app/
 RUN     set -x && \
         conan install \
             app/ \
-            --profile:build ${CONAN_BUILD_PROFILE} \
-            --profile:host ${CONAN_HOST_PROFILE} \
+            --lockfile app/${CONAN_HOST_PROFILE}.lock \
             --build missing \
             --install-folder app/build/ \
             && \

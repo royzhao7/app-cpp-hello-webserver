@@ -4,6 +4,7 @@
 !inc/
 !src/
 !www/
+!conan_locks/
 !CMakeLists.txt
 !remotes.txt
 !conanfile.py

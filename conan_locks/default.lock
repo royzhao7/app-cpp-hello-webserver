@@ -1,0 +1,46 @@
+{
+ "graph_lock": {
+  "nodes": {
+   "0": {
+    "options": "build_unittest=False\ncpp-httplib:with_brotli=False\ncpp-httplib:with_openssl=False\ncpp-httplib:with_zlib=False\nfmt:fPIC=True\nfmt:header_only=False\nfmt:shared=False\nfmt:with_fmt_alias=False\nfmt:with_os_api=True\nspdlog:fPIC=True\nspdlog:header_only=False\nspdlog:no_exceptions=False\nspdlog:shared=False\nspdlog:wchar_filenames=False\nspdlog:wchar_support=False",
+    "requires": [
+     "1",
+     "2",
+     "4"
+    ],
+    "path": "../conanfile.py",
+    "context": "host"
+   },
+   "1": {
+    "ref": "cpp-httplib/0.7.5#932dddc6c74b806ab65e194c1b6e8f33",
+    "options": "with_brotli=False\nwith_openssl=False\nwith_zlib=False",
+    "package_id": "5ab84d6acfe1f23c4fae0ab88f26e3a396351ac9",
+    "context": "host"
+   },
+   "2": {
+    "ref": "spdlog/1.7.0#78869f5610cc796334cda34dbd09c265",
+    "options": "fPIC=True\nheader_only=False\nno_exceptions=False\nshared=False\nwchar_filenames=False\nwchar_support=False\nfmt:fPIC=True\nfmt:header_only=False\nfmt:shared=False\nfmt:with_fmt_alias=False\nfmt:with_os_api=True",
+    "package_id": "ff8d59d47be9cd9bef245bc941640efed49089de",
+    "requires": [
+     "3"
+    ],
+    "context": "host"
+   },
+   "3": {
+    "ref": "fmt/7.1.3#3230952cdb4aed00796648cc9d0834bb",
+    "options": "fPIC=True\nheader_only=False\nshared=False\nwith_fmt_alias=False\nwith_os_api=True",
+    "package_id": "bb317a1f4f7069078e967719a5c585f83cd078c2",
+    "context": "host"
+   },
+   "4": {
+    "ref": "tclap/1.2.3#f61fcf24bfb2f7b6f8c93064f4f70cce",
+    "options": "",
+    "package_id": "5ab84d6acfe1f23c4fae0ab88f26e3a396351ac9",
+    "context": "host"
+   }
+  },
+  "revisions_enabled": true
+ },
+ "version": "0.4",
+ "profile_host": "[settings]\narch=x86_64\narch_build=x86_64\nbuild_type=Release\ncompiler=gcc\ncompiler.libcxx=libstdc++11\ncompiler.version=10\nos=Linux\nos_build=Linux\n[options]\n[build_requires]\n[env]\n"
+}
