@@ -33,6 +33,10 @@ The sequence to build the application from scratch is as follows:
     ````bash
     conan install . --install-folder build/gcc --build missing
     ````
+    Note: alternatively, the provided lockfile can be used to ensure reproducability despite possible future changes in the Conan tool version and/or recipes:
+    ````bash
+    conan install . --install-folder build/gcc --build missing --lockfile conan_locks/default.lock
+    ````
 - Build the application using Conan
     ````bash
     conan build . --build-folder build/gcc
