@@ -14,7 +14,7 @@ This involves mainly:
 - the usage of a [distroless](https://github.com/GoogleContainerTools/distroless) base runtime image that is suitable for any C++ application
 - a development workflow based on [VS Code](https://code.visualstudio.com/)'s [Remote Development](https://code.visualstudio.com/docs/remote/remote-overview) approach
 
-## Building and Unit Testing the Application
+## Building, Unit Testing and Updating the Application
 As mentioned above, this repo uses a remote development container environment that contains all the tools and extensions necessary to build and test the application.  
 Once the development environment is loaded in VS Code, building and testing the application can be done via the GUI or the terminal window.  
 
@@ -32,10 +32,6 @@ The sequence to build the application from scratch is as follows:
 - Install the application dependencies using Conan
     ````bash
     conan install . --install-folder build/gcc --build missing
-    ````
-    Note: alternatively, the provided lockfile can be used to ensure reproducability despite possible future changes in the Conan tool version and/or recipes:
-    ````bash
-    conan install . --install-folder build/gcc --build missing --lockfile conan_locks/default.lock
     ````
 - Build the application using Conan
     ````bash
@@ -59,6 +55,9 @@ conan install . --install-folder build/gcc --build missing --options build_unitt
 conan build . --build-folder build/gcc
 ./build/gcc/bin/test
 ````
+
+### Updating Dependencies
+[Conan lockfiles](https://docs.conan.io/en/latest/versioning/lockfiles/introduction.html) are used to ensure reproducability during execution of the build pipelines. Therefore, after any development updates that might change the list of application libraries, their versions or their recipe versions, the lockfiles under [conan](conan/) shall be updated using the appropriate `conan lock create` commands.  
 
 ## Running the Integration Test
 __Important Note:__ since the integration test uses [Docker Compose](https://docs.docker.com/compose/), it has to be run __outside__ of the development container.  

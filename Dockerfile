@@ -146,13 +146,13 @@ FROM    builder AS build
 ARG     CONAN_BUILD_PROFILE=default
 ARG     CONAN_HOST_PROFILE=default
 # Install the application dependencies
-COPY    remotes.txt \
+COPY    conan/remotes.txt \
         /tmp/remotes.txt
 RUN     set -x && \
         conan config \
             install \
             /tmp/remotes.txt
-COPY    conan_locks/ \
+COPY    conan/${CONAN_HOST_PROFILE}.lock \
         conanfile.py \
         app/
 RUN     set -x && \

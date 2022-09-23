@@ -30,7 +30,7 @@
 		"source=conan_data,target=/home/vscode/.conan/data,type=volume"
 	],
 	// Commands to execute once the container is created
-	"postCreateCommand": "conan config install remotes.txt",
+	"postCreateCommand": "conan config install conan/remotes.txt",
 	// Set *default* container specific settings.json values on container create.
 	"settings": {
 		"terminal.integrated.profiles.linux": {
